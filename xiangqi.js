@@ -1,3 +1,6 @@
+// 象棋核心实现 //
+
+// 这些变量是棋子常量 chessdef，加上队伍的形式为：chesstype * team
 const rook = 1
 const knight = 2
 const bishop = 3
@@ -5,8 +8,16 @@ const guard = 4
 const king = 5
 const cannon = 6
 const pawn = 7
+
 const red = 1
 const black = -1
+
+export const defs = {
+  rook, knight, bishop, guard, king, cannon, pawn, red, black
+}
+
+// 错误信息常量
+const errPrefix = "[Board Error]: "
 
 /**
  * 判断是否是红方
@@ -24,8 +35,6 @@ function pos(x, y) {
 
 /**
  * 是否在王区内
- * @param {number} team
- * @returns
  */
 function isInKingzone(x, y, team) {
   if (team === red) return x >= 3 && x <= 5 && y >= 0 && y <= 2
@@ -50,7 +59,7 @@ function isInBoard(x, y) {
 /**
  * 获取棋子id * team对应的棋子类型（即id绝对值）
  */
-function absChess(id) {
+function getChessdef(id) {
   return Math.abs(id)
 }
 
@@ -78,8 +87,6 @@ export class Board {
     this.view = view
   }
 
-  // Public Methods
-
   /**
    * 获取指定位置上的棋子的所有可行着法
    * @param {number} x 横坐标，以0开始
@@ -87,7 +94,7 @@ export class Board {
    * @returns {Array} 所有走法构成的数组（暂时包括违规的走法，比如送将）
    */
   getMovesOfChess(x, y) {
-    let chess = absChess(this.#chessOn(x, y))
+    const chess = getChessdef(this.#chessOn(x, y))
     switch (chess) {
       case king:
         return this.#king(x, y)
@@ -106,21 +113,32 @@ export class Board {
     }
   }
 
-  // Utils
+  // Utils //
 
-  /** 获取指定位置上的棋子 */
+  /**
+   * 获取指定位置上的棋子
+   */
   #chessOn(x, y) {
     if (this.chessMap[x]) {
       return this.chessMap[x][y]
     }
   }
 
-  /** 获取指定位置上的棋子的队伍 */
+  /**
+   *  获取指定位置上的棋子的队伍
+   */
   #teamOn(x, y) {
-    return isRed(this.#chessOn(x, y)) ? red : black
+    if (this.#chessOn(x, y) !== 0) {
+      return isRed(this.#chessOn(x, y)) ? red : black
+    }
+    else {
+      throw new Error(errPrefix + "attempt to get team type on an empty place!")
+    }
   }
 
-  /** 计算是否可以从位置一走棋到位置二 */
+  /**
+   * 计算是否可以从位置一走棋到位置二
+   */
   #canMove(x1, y1, x2, y2) {
     if (isInBoard(x2, y2) === false) {
       return false
@@ -137,9 +155,11 @@ export class Board {
     return false
   }
 
-  // ChessMoveMethods
+  // ChessMoveMethods //
 
-  /** 帅 */
+  /**
+   * 帅
+   */
   #king(x, y) {
     const team = this.#teamOn(x, y)
     let result = [
@@ -153,14 +173,16 @@ export class Board {
       if (chess) {
         count++
       }
-      if (absChess(chess) === king && y_ !== y && count <= 2) {
+      if (getChessdef(chess) === king && y_ !== y && count <= 2) {
         result.push(pos(x, k))
       }
     })
     return result
   }
 
-  /** 士 */
+  /**
+   * 士
+   */
   #guard(x, y) {
     const team = this.#teamOn(x, y)
     let result = [
@@ -168,11 +190,12 @@ export class Board {
       pos(x - 1, y + 1), pos(x - 1, y - 1)
     ]
     result = result.filter((v) => isInKingzone(v.x, v.y, team) && this.#canMove(x, y, v.x, v.y))
-
     return result
   }
 
-  /** 相 */
+  /**
+   * 相
+   */
   #bishop(x, y) {
     const team = this.#teamOn(x, y)
     let result = []
@@ -191,7 +214,9 @@ export class Board {
     return result
   }
 
-  /** 马 */
+  /**
+   * 马
+   */
   #knight(x, y) {
     let result = []
 
@@ -211,11 +236,12 @@ export class Board {
       result.push(pos(x + 1, y - 2))
       result.push(pos(x - 1, y - 2))
     }
-
     return result.filter((v) => this.#canMove(x, y, v.x, v.y))
   }
 
-  /** 兵 */
+  /**
+   * 兵
+   */
   #pawn(x, y) {
     const team = this.#teamOn(x, y)
     if (isInHome(x, y, team)) {
@@ -238,7 +264,9 @@ export class Board {
     }
   }
 
-  /** 车 */
+  /**
+   * 车
+   */
   #rook(x, y) {
     let result = []
     let x_ = x
@@ -276,7 +304,9 @@ export class Board {
     return result
   }
 
-  /** 炮 */
+  /**
+   * 炮
+   */
   #cannon(x, y) {
     const team = this.#teamOn(x, y)
     let result = []
