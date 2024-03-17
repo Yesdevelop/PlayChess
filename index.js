@@ -42,7 +42,7 @@ const imagesLocal = {
   blackChosen: "./assets/chess_images/black_chosen.png"
 }
 
-let images
+let images = null
 
 if (location.href.match(/(localhost)|(127\.0\.0\.1)/g)) {
   images = imagesLocal
@@ -93,7 +93,6 @@ function getUrlById(id) {
 
 let boardEl = null
 let highlights = []
-let selection = null
 
 const redChosen = 1
 const blackChosen = 2

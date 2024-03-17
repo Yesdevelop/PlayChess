@@ -130,6 +130,7 @@ export class Board {
    * @param {number} y2
    */
   moveTo(x1, y1, x2, y2) {
+    this.moves.push({ x1, y1, x2, y2, chess: this.chessOn(x2, y2) })
     this.chessMap[x2][y2] = this.chessMap[x1][y1]
     this.chessMap[x1][y1] = 0
     this.isRedTurn = !this.isRedTurn
@@ -153,7 +154,6 @@ export class Board {
    * 计算是否可以从位置一走棋到位置二
    */
   #canMove(x1, y1, x2, y2) {
-    console.log(isInBoard(x2, y2))
     if (isInBoard(x2, y2) === false) {
       return false
     }

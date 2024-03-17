@@ -9,6 +9,10 @@ body {
   background-color: brown;
 }
 
+.toolbar {
+  margin-bottom: 10px;
+}
+
 #board {
   background-repeat: no-repeat;
   background-size: 100% 100%;
