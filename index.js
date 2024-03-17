@@ -107,8 +107,6 @@ function selectChess(x, y) {
     board.chessOn(x, y) > 0 && board.isRedTurn === true ||
     board.chessOn(x, y) < 0 && board.isRedTurn === false
   ) {
-    selection = { x, y }
-
     highlights.forEach((v) => v.style.backgroundImage = "none")
     highlights = []
 
