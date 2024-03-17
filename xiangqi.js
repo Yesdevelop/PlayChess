@@ -1,5 +1,3 @@
-// 象棋核心实现 //
-
 // 这些变量是棋子常量 chessdef，加上队伍的形式为：chesstype * team
 const rook = 1
 const knight = 2
@@ -94,7 +92,7 @@ export class Board {
    * @returns {Array} 所有走法构成的数组（暂时包括违规的走法，比如送将）
    */
   getMovesOfChess(x, y) {
-    const chess = getChessdef(this.#chessOn(x, y))
+    const chess = getChessdef(this.chessOn(x, y))
     switch (chess) {
       case king:
         return this.#king(x, y)
@@ -113,23 +111,37 @@ export class Board {
     }
   }
 
-  // Utils //
-
   /**
    * 获取指定位置上的棋子
+   * @param {number} x
+   * @param {number} y
    */
-  #chessOn(x, y) {
+  chessOn(x, y) {
     if (this.chessMap[x]) {
       return this.chessMap[x][y]
     }
   }
 
   /**
+   * 移动棋子到某处
+   * @param {number} x1
+   * @param {number} y1
+   * @param {number} x2
+   * @param {number} y2
+   */
+  moveTo(x1, y1, x2, y2) {
+    this.chessMap[x2][y2] = this.chessMap[x1][y1]
+    this.chessMap[x1][y1] = 0
+  }
+
+  // Utils //
+
+  /**
    *  获取指定位置上的棋子的队伍
    */
   #teamOn(x, y) {
-    if (this.#chessOn(x, y) !== 0) {
-      return isRed(this.#chessOn(x, y)) ? red : black
+    if (this.chessOn(x, y) !== 0) {
+      return isRed(this.chessOn(x, y)) ? red : black
     }
     else {
       throw new Error(errPrefix + "attempt to get team type on an empty place!")
@@ -143,7 +155,7 @@ export class Board {
     if (isInBoard(x2, y2) === false) {
       return false
     }
-    let chess = this.#chessOn(x2, y2)
+    let chess = this.chessOn(x2, y2)
     if (chess === 0) {
       return true
     }
@@ -173,8 +185,8 @@ export class Board {
       if (chess) {
         count++
       }
-      if (getChessdef(chess) === king && y_ !== y && count <= 2) {
-        result.push(pos(x, k))
+      if (getChessdef(chess) === king && y_ !== y && count === 2) {
+        result.push(pos(x, y_))
       }
     })
     return result
@@ -200,13 +212,13 @@ export class Board {
     const team = this.#teamOn(x, y)
     let result = []
 
-    if (this.#chessOn(x + 1, y + 1) === 0 && this.#canMove(x, y, x + 2, y + 2))
+    if (this.chessOn(x + 1, y + 1) === 0 && this.#canMove(x, y, x + 2, y + 2))
       result.push(pos(x + 2, y + 2))
-    if (this.#chessOn(x + 1, y - 1) === 0 && this.#canMove(x, y, x + 2, y - 2))
+    if (this.chessOn(x + 1, y - 1) === 0 && this.#canMove(x, y, x + 2, y - 2))
       result.push(pos(x + 2, y - 2))
-    if (this.#chessOn(x - 1, y + 1) === 0 && this.#canMove(x, y, x - 2, y + 2))
+    if (this.chessOn(x - 1, y + 1) === 0 && this.#canMove(x, y, x - 2, y + 2))
       result.push(pos(x - 2, y + 2))
-    if (this.#chessOn(x - 1, y - 1) === 0 && this.#canMove(x, y, x - 2, y - 2))
+    if (this.chessOn(x - 1, y - 1) === 0 && this.#canMove(x, y, x - 2, y - 2))
       result.push(pos(x - 2, y - 2))
 
     result = result.filter((v) => isInHome(v.x, v.y, team))
@@ -220,19 +232,19 @@ export class Board {
   #knight(x, y) {
     let result = []
 
-    if (this.#chessOn(x + 1, y) === 0) {
+    if (this.chessOn(x + 1, y) === 0) {
       result.push(pos(x + 2, y + 1))
       result.push(pos(x + 2, y - 1))
     }
-    if (this.#chessOn(x - 1, y) === 0) {
+    if (this.chessOn(x - 1, y) === 0) {
       result.push(pos(x - 2, y + 1))
       result.push(pos(x - 2, y - 1))
     }
-    if (this.#chessOn(x, y + 1) === 0) {
+    if (this.chessOn(x, y + 1) === 0) {
       result.push(pos(x + 1, y + 2))
       result.push(pos(x - 1, y + 2))
     }
-    if (this.#chessOn(x, y - 1) === 0) {
+    if (this.chessOn(x, y - 1) === 0) {
       result.push(pos(x + 1, y - 2))
       result.push(pos(x - 1, y - 2))
     }
@@ -272,7 +284,7 @@ export class Board {
     let x_ = x
     let y_ = y
     let rookMove = (x_, y_) => {
-      if (this.#chessOn(x_, y_) === 0) {
+      if (this.chessOn(x_, y_) === 0) {
         result.push(pos(x_, y_))
       }
       else if (this.#canMove(x, y, x_, y_)) {
@@ -314,12 +326,12 @@ export class Board {
     let y_ = y
     while (x_ < 8) {
       x_++
-      if (this.#chessOn(x_, y) === 0) {
+      if (this.chessOn(x_, y) === 0) {
         result.push(pos(x_, y))
       } else {
         while (x_ < 8) {
           x_++
-          if (this.#teamOn(x_, y) !== team && this.#chessOn(x_, y) !== 0) {
+          if (this.chessOn(x_, y) !== 0 && this.#teamOn(x_, y) !== team) {
             result.push(pos(x_, y))
             break
           }
@@ -330,12 +342,12 @@ export class Board {
     x_ = x
     while (x_ > 0) {
       x_--
-      if (this.#chessOn(x_, y) === 0) {
+      if (this.chessOn(x_, y) === 0) {
         result.push(pos(x_, y))
       } else {
         while (x_ > 0) {
           x_--
-          if (this.#teamOn(x_, y) !== team && this.#chessOn(x_, y) !== 0) {
+          if (this.chessOn(x_, y) !== 0 && this.#teamOn(x_, y) !== team) {
             result.push(pos(x_, y))
             break
           }
@@ -345,12 +357,12 @@ export class Board {
     }
     while (y_ < 9) {
       y_++
-      if (this.#chessOn(x, y_) === 0) {
+      if (this.chessOn(x, y_) === 0) {
         result.push(pos(x, y_))
       } else {
         while (y_ < 9) {
           y_++
-          if (this.#teamOn(x, y_) !== team && this.#chessOn(x, y_) !== 0) {
+          if (this.chessOn(x, y_) !== 0 && this.#teamOn(x, y_) !== team) {
             result.push(pos(x, y_))
             break
           }
@@ -361,12 +373,12 @@ export class Board {
     y_ = y
     while (y_ > 0) {
       y_--
-      if (this.#chessOn(x, y_) === 0) {
+      if (this.chessOn(x, y_) === 0) {
         result.push(pos(x, y_))
       } else {
         while (y_ > 0) {
           y_--
-          if (this.#teamOn(x, y_) !== team && this.#chessOn(x, y_) !== 0) {
+          if (this.chessOn(x, y_) !== 0 && this.#teamOn(x, y_) !== team) {
             result.push(pos(x, y_))
             break
           }
