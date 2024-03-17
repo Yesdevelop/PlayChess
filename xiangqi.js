@@ -51,7 +51,7 @@ function isInHome(x, y, team) {
  * 是否在棋盘内
  */
 function isInBoard(x, y) {
-  x >= 0 && x <= 8 && y >= 0 && y <= 9
+  return x >= 0 && x <= 8 && y >= 0 && y <= 9
 }
 
 /**
@@ -132,6 +132,7 @@ export class Board {
   moveTo(x1, y1, x2, y2) {
     this.chessMap[x2][y2] = this.chessMap[x1][y1]
     this.chessMap[x1][y1] = 0
+    this.isRedTurn = !this.isRedTurn
   }
 
   // Utils //
@@ -152,6 +153,7 @@ export class Board {
    * 计算是否可以从位置一走棋到位置二
    */
   #canMove(x1, y1, x2, y2) {
+    console.log(isInBoard(x2, y2))
     if (isInBoard(x2, y2) === false) {
       return false
     }
@@ -174,21 +176,27 @@ export class Board {
    */
   #king(x, y) {
     const team = this.#teamOn(x, y)
+    const id = this.chessOn(x, y)
     let result = [
       pos(x + 1, y), pos(x - 1, y),
       pos(x, y + 1), pos(x, y - 1)
     ]
     result = result.filter((v) => isInKingzone(v.x, v.y, team) && this.#canMove(x, y, v.x, v.y))
     // 白脸将
-    let count = 0
-    this.chessMap[x].forEach((chess, y_) => {
-      if (chess) {
-        count++
+    let enemyKingPos = null
+    for (let k in this.chessMap[x]) {
+      const chessid = this.chessMap[x][k]
+      if (-chessid === id) {
+        enemyKingPos = pos(x, k)
       }
-      if (getChessdef(chess) === king && y_ !== y && count === 2) {
-        result.push(pos(x, y_))
+      if (chessid !== 0 && getChessdef(chessid) !== king) {
+        enemyKingPos = null
+        break
       }
-    })
+    }
+    if (enemyKingPos) {
+      result.push(enemyKingPos)
+    }
     return result
   }
 
@@ -248,7 +256,10 @@ export class Board {
       result.push(pos(x + 1, y - 2))
       result.push(pos(x - 1, y - 2))
     }
-    return result.filter((v) => this.#canMove(x, y, v.x, v.y))
+    return result.filter((v) => {
+      console.log(this.#canMove(x, y, v.x, v.y))
+      return this.#canMove(x, y, v.x, v.y)
+    })
   }
 
   /**

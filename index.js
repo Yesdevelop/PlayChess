@@ -93,7 +93,6 @@ function getUrlById(id) {
 
 let boardEl = null
 let highlights = []
-let onclicks = []
 let selection = null
 
 const redChosen = 1
@@ -105,32 +104,37 @@ const blackChosen = 2
  * @param {number} y
  */
 function selectChess(x, y) {
-  selection = { x, y }
+  if (
+    board.chessOn(x, y) > 0 && board.isRedTurn === true ||
+    board.chessOn(x, y) < 0 && board.isRedTurn === false
+  ) {
+    selection = { x, y }
 
-  highlights.forEach((v) => v.style.backgroundImage = "none")
-  highlights = []
+    highlights.forEach((v) => v.style.backgroundImage = "none")
+    highlights = []
 
-  const squareContentEl = document.querySelector(`div[pos-x="${x}"][pos-y="${y}"]`)
-  const squareEl = squareContentEl.parentElement
-  const id = board.chessOn(x, y)
-  const moves = board.getMovesOfChess(x, y)
-  let chosen = null
-
-  if (id > 0) {
-    highlight(squareEl, redChosen)
-    chosen = redChosen
-  }
-  else {
-    highlight(squareEl, blackChosen)
-    chosen = blackChosen
-  }
-
-  moves.forEach((v) => {
-    const squareContentEl = document.querySelector(`div[pos-x="${v.x}"][pos-y="${v.y}"]`)
+    const squareContentEl = document.querySelector(`div[pos-x="${x}"][pos-y="${y}"]`)
     const squareEl = squareContentEl.parentElement
-    squareContentEl.onclick = () => move(x, y, v.x, v.y)
-    highlight(squareEl, chosen)
-  })
+    const id = board.chessOn(x, y)
+    const moves = board.getMovesOfChess(x, y)
+    let chosen = null
+
+    if (id > 0) {
+      highlight(squareEl, redChosen)
+      chosen = redChosen
+    }
+    else {
+      highlight(squareEl, blackChosen)
+      chosen = blackChosen
+    }
+
+    moves.forEach((v) => {
+      const squareContentEl = document.querySelector(`div[pos-x="${v.x}"][pos-y="${v.y}"]`)
+      const squareEl = squareContentEl.parentElement
+      squareContentEl.onclick = () => move(x, y, v.x, v.y)
+      highlight(squareEl, chosen)
+    })
+  }
 }
 
 /**
