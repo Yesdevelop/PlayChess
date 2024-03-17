@@ -44,12 +44,15 @@ const imagesLocal = {
 
 let images = null
 
+/*
 if (location.href.match(/(localhost)|(127\.0\.0\.1)/g)) {
   images = imagesLocal
 }
 else {
   images = imagesHosting
 }
+*/
+images = imagesLocal
 
 /**
  * 根据棋子id获取图片地址
